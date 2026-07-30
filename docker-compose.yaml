@@ -1,0 +1,11 @@
+services:
+  api:
+    container_name: velocambio_api
+    build: .
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./app:/app
+    env_file: .env
+    environment:
+      PYTHONUNBUFFERED: 1

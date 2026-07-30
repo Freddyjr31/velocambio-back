@@ -1,0 +1,54 @@
+from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+#? ----- Project version
+VERSION = "1.0.0"
+
+class Settings(BaseSettings):
+    
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=True)
+    
+    #? ──────────────────────────────────────────────
+    #?        Configuración de base de datos
+    #? ──────────────────────────────────────────────
+
+    # URL de conexión a la base de datos principal
+    DATABASE_URL: str = "sqlite:///./app.db"
+
+    # Tipo de base de datos: "postgresql" | "sqlite" | "mysql"
+    DATABASE_TYPE: str = "postgresql"
+
+    # Activar logs detallados de SQLAlchemy (útil en desarrollo)
+    DATABASE_ECHO: bool = True
+
+    #? ──────────────────────────────────────────────
+    #?               JWT (Autenticación)
+    #? ──────────────────────────────────────────────
+
+    SECRET_KEY_JWT: str
+    ALGORITHIM_HASH_JWT: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    
+    #? ──────────────────────────────────────────────
+    #?     Fetch de tasas (Rates)
+    #? ──────────────────────────────────────────────
+
+    FETCH_INTERVAL_MINUTES: int = 2
+    DOLARAPI_BASE_URL: str = "https://ve.dolarapi.com/v1"
+    BINANCE_P2P_BASE_URL: str = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search"
+    HTTP_TIMEOUT_SECONDS: int = 10
+    HTTP_MAX_RETRIES: int = 3
+
+
+# @lru_cache asegura que la instancia de Settings se cree una sola vez
+# y se reutilice en toda la aplicación, mejorando el rendimiento.
+# @lru_cache()
+# def get_settings():
+#     return Settings()
+
+@lru_cache()
+def get_settings():
+    s = Settings()
+    assert s.HTTP_TIMEOUT_SECONDS > 0, "HTTP_TIMEOUT_SECONDS debe ser > 0"
+    return s
