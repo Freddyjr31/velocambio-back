@@ -30,7 +30,9 @@ class LogMiddleware(BaseHTTPMiddleware):
         response.headers["X-API-Version"] = VERSION
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
-        
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Content-Security-Policy"] = "default-src 'self'"
+
         logger.info("← %s %s → %s (%.3fs)", request.method, request.url.path, response.status_code, elapsed)
         
         return response

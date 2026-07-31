@@ -1,9 +1,10 @@
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 #? ----- Project version
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 class Settings(BaseSettings):
     
@@ -20,7 +21,7 @@ class Settings(BaseSettings):
     DATABASE_TYPE: str = "postgresql"
 
     # Activar logs detallados de SQLAlchemy (útil en desarrollo)
-    DATABASE_ECHO: bool = True
+    DATABASE_ECHO: bool = False
 
     #? ──────────────────────────────────────────────
     #?               JWT (Autenticación)
@@ -29,6 +30,18 @@ class Settings(BaseSettings):
     SECRET_KEY_JWT: str
     ALGORITHIM_HASH_JWT: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
+
+    #? ──────────────────────────────────────────────
+    #?              Validadores
+    #? ──────────────────────────────────────────────
+
+    @field_validator("SECRET_KEY_JWT")
+    @classmethod
+    def validate_secret_key(cls, v):
+        #* Asegura que la clave JWT tenga al menos 32 caracteres
+        if len(v) < 32:
+            raise ValueError("SECRET_KEY_JWT debe tener al menos 32 caracteres")
+        return v
     
     #? ──────────────────────────────────────────────
     #?     Fetch de tasas (Rates)

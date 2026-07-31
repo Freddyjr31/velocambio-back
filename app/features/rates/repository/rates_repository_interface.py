@@ -18,5 +18,6 @@ class RatesRepositoryInterface(ABC):
     def get_p2p_rates(self):
         pass
     
+    @abstractmethod
     def get_all_rates_today(self):
         pass

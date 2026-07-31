@@ -14,12 +14,17 @@ Base = declarative_base()
 def get_engine():
     settings = get_settings()
     return create_engine(
-        settings.DATABASE_URL, 
+        settings.DATABASE_URL,
         echo=settings.DATABASE_ECHO,
         pool_size=5,
         max_overflow=3,
         pool_pre_ping=True,       # verifica conexión antes de usarla
         pool_recycle=1800,        # recicla cada 30 min
+        pool_timeout=30,          # tiempo máximo de espera por conexión
+        connect_args={
+            "sslmode": "require",        # fuerza SSL/TLS
+            "connect_timeout": 10,       # timeout de conexión en segundos
+        },
         )
 
 
