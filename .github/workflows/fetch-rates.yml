@@ -1,0 +1,35 @@
+name: Fetch exchange rates
+
+on:
+  schedule:
+    # 9:00am - 2:30pm hora Venezuela (UTC-4) = 13:00 - 18:30 UTC, cada 30 min
+    - cron: '0,30 13-18 * * *'
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar fetch de tasas
+        run: python cron/fetch_rates.py --once
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_TYPE: postgresql
+          DATABASE_ECHO: 'False'
+          SECRET_KEY_JWT: ${{ secrets.SECRET_KEY_JWT }}
+          ALGORITHIM_HASH_JWT: HS256
+          ACCESS_TOKEN_EXPIRE_MINUTES: '90'
+          DOLARAPI_BASE_URL: ${{ secrets.DOLARAPI_BASE_URL }}
+          BINANCE_P2P_BASE_URL: ${{ secrets.BINANCE_P2P_BASE_URL }}
+          HTTP_TIMEOUT_SECONDS: '10'
+          HTTP_MAX_RETRIES: '3'

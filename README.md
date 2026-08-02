@@ -50,6 +50,9 @@ velocambio-back/
 │   ├── main.py             # Punto de entrada FastAPI
 ├── cron/
 │   └── fetch_rates.py      # Fetch periódico con APScheduler
+├── .github/
+│   └── workflows/
+│       └── fetch-rates.yml # Cron vía GitHub Actions
 ├── tests/
 │   ├── conftest.py
 │   ├── test_cron_fetch_rates.py
@@ -139,10 +142,16 @@ Documentación interactiva en `http://localhost:9000/docs`.
 ### Cron de fetch
 
 ```bash
+# Scheduler local (ventana 8am-2pm hora Venezuela, cada 30 min)
 python cron/fetch_rates.py
+
+# Un solo fetch y terminar (GitHub Actions / cron externo)
+python cron/fetch_rates.py --once
 ```
 
-Ejecuta el fetch de todas las tasas cada N minutos (configurable vía `FETCH_INTERVAL_MINUTES` en `.env`).
+Solo inserta un registro cuando la tasa **cambió** respecto al último valor de esa fuente/moneda/tipo (dedup). También se puede ejecutar automáticamente vía GitHub Actions (`.github/workflows/fetch-rates.yml`), el cual corre `--once` en la ventana 9am-2pm VET.
+
+> Para GitHub Actions: configurar los secrets `DATABASE_URL`, `SECRET_KEY_JWT`, `DOLARAPI_BASE_URL` y `BINANCE_P2P_BASE_URL` en Settings → Secrets and variables → Actions.
 
 ---
 

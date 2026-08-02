@@ -34,6 +34,7 @@ class RatesRepositoryImpl(RatesRepositoryInterface):
                 ExchangeRate.currency_to_id == CURRENCY_IDS["VES"],
                 ExchangeRate.rate_type_id == RATE_TYPE_IDS["promedio"],
                 ExchangeRate.source_type_id == SOURCE_IDS["dolar_api"],
+                ExchangeRate.fetched_at >= datetime.now(timezone.utc) - timedelta(hours=24)
         ).first()
             
         return usd_query
@@ -46,6 +47,7 @@ class RatesRepositoryImpl(RatesRepositoryInterface):
                 ExchangeRate.currency_to_id == CURRENCY_IDS["VES"],
                 ExchangeRate.rate_type_id == RATE_TYPE_IDS["oficial"],
                 ExchangeRate.source_type_id == SOURCE_IDS["dolar_api"],
+                ExchangeRate.fetched_at >= datetime.now(timezone.utc) - timedelta(hours=24)
         ).first()
             
         return eur_query
@@ -58,6 +60,7 @@ class RatesRepositoryImpl(RatesRepositoryInterface):
                 ExchangeRate.currency_to_id == CURRENCY_IDS["VES"],
                 ExchangeRate.rate_type_id == RATE_TYPE_IDS["p2p"],
                 ExchangeRate.source_type_id == SOURCE_IDS["binance_p2p"],
+                ExchangeRate.fetched_at >= datetime.now(timezone.utc) - timedelta(hours=24)
         ).first()
             
         return p2p_query

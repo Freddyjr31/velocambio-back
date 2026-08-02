@@ -3,6 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "app"))
 
+from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -109,6 +110,42 @@ def test_fetch_and_store_stores_all_rates(
     assert add_calls == 4, (
         f"Esperaba 4 ExchangeRate añadidos (oficial, paralelo, euro, p2p), "
         f"pero se añadieron {add_calls}"
+    )
+
+    mock_session.commit.assert_called_once()
+    mock_session.close.assert_called_once()
+
+
+@patch("cron.fetch_rates.get_session_factory")
+@patch("cron.fetch_rates.client")
+def test_fetch_and_store_skips_unchanged_rates(
+    mock_client: MagicMock,
+    mock_session_factory: MagicMock,
+):
+    """Con dedup activo, una tasa con el mismo precio que el último registro se omite."""
+    mock_client.get.side_effect = [
+        _mock_http_response(MOCK_OFICIAL),
+        _mock_http_response(MOCK_PARALELO),
+        _mock_http_response(MOCK_EURO),
+    ]
+    mock_client.post.return_value = _mock_http_response(MOCK_BINANCE)
+
+    mock_session = MagicMock()
+    mock_session_factory.return_value.return_value = mock_session
+
+    #* Simula que el último registro del oficial ya tiene el mismo precio (74.65)
+    existing = MagicMock()
+    existing.price = Decimal(MOCK_OFICIAL["promedio"])
+    mock_session.query.return_value.filter.return_value.order_by.return_value.first.return_value = existing
+
+    from cron.fetch_rates import fetch_and_store
+
+    fetch_and_store()
+
+    # oficial se omite (mismo precio); paralelo, euro y p2p se insertan
+    assert mock_session.add.call_count == 3, (
+        f"Esperaba 3 ExchangeRate insertados (paralelo, euro, p2p), "
+        f"pero se añadieron {mock_session.add.call_count}"
     )
 
     mock_session.commit.assert_called_once()

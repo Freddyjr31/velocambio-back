@@ -13,6 +13,15 @@ Base = declarative_base()
 @lru_cache
 def get_engine():
     settings = get_settings()
+    #* Los connect_args SSL son específicos de PostgreSQL
+    #* (rompen SQLite, que se usa en desarrollo/tests)
+    connect_args = {}
+    if settings.DATABASE_TYPE == "postgresql":
+        connect_args = {
+            "sslmode": "require",        # fuerza SSL/TLS
+            "connect_timeout": 10,       # timeout de conexión en segundos
+        }
+
     return create_engine(
         settings.DATABASE_URL,
         echo=settings.DATABASE_ECHO,
@@ -21,10 +30,7 @@ def get_engine():
         pool_pre_ping=True,       # verifica conexión antes de usarla
         pool_recycle=1800,        # recicla cada 30 min
         pool_timeout=30,          # tiempo máximo de espera por conexión
-        connect_args={
-            "sslmode": "require",        # fuerza SSL/TLS
-            "connect_timeout": 10,       # timeout de conexión en segundos
-        },
+        connect_args=connect_args,
         )
 
 

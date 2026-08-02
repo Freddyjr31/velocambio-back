@@ -46,6 +46,9 @@ velocambio-back/
 │   ├── main.py             # Punto de entrada FastAPI
 ├── cron/
 │   └── fetch_rates.py      # Script scheduleado con APScheduler
+├── .github/
+│   └── workflows/
+│       └── fetch-rates.yml # Workflow de GitHub Actions
 ├── tests/
 │   ├── conftest.py         # Fixtures (SQLite in-memory, TestClient)
 │   ├── test_cron_fetch_rates.py
@@ -99,8 +102,11 @@ velocambio-back/
 # Iniciar servidor de desarrollo
 uvicorn app.main:app --reload
 
-# Ejecutar cron de fetch de tasas
+# Ejecutar cron de fetch de tasas (scheduler local, ventana 8am-2pm VET)
 python cron/fetch_rates.py
+
+# Ejecutar un solo fetch y terminar (GitHub Actions / cron externo)
+python cron/fetch_rates.py --once
 
 # Tests
 pytest -v
@@ -111,6 +117,13 @@ docker compose up --build
 # Instalar dependencias
 pip install -r requirements.txt
 ```
+
+## Cron y dedup de tasas
+
+- `cron/fetch_rates.py` **solo inserta si el precio cambió** respecto al último registro de esa fuente/moneda/tipo (`_has_changed`), evitando registros duplicados
+- Modo local: scheduler APScheduler con ventana `8:00-14:30` hora Venezuela (`America/Caracas`), cada 30 min
+- Modo GitHub Actions: workflow `.github/workflows/fetch-rates.yml` ejecuta `python cron/fetch_rates.py --once` en ventana UTC `13:00-18:30` (9am-2pm VET)
+- Los secrets requeridos en GitHub Actions: `DATABASE_URL`, `SECRET_KEY_JWT`, `DOLARAPI_BASE_URL`, `BINANCE_P2P_BASE_URL`
 
 ## Reglas al modificar código
 
