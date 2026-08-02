@@ -34,11 +34,15 @@ class BinanceP2PDataSource:
         response.raise_for_status()
         
         parsed = BinanceP2PResponse(**response.json())
-        
+
+        #* La API invierte la perspectiva: request "BUY" devuelve anuncios "SELL"
+        #* (el merchant vende). Derivamos el tipo esperado del trade_type del request.
+        expected_adv_type = "SELL" if self._trade_type == "BUY" else "BUY"
+
         ads = [
             item.adv for item in parsed.data
             if item.adv and item.adv.isTradable
-            and item.adv.tradeType == 'SELL'
+            and item.adv.tradeType == expected_adv_type
             and item.adv.tradableQuantity
         ]
 
