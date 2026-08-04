@@ -13,7 +13,7 @@ class RateService:
     def get_usd_rates(self):
         usd_consult = self.repository.get_oficial_usd_rates()
         if not usd_consult:
-             raise HTTPException(status_code=404, detail="No hay tasa disponible")
+            raise HTTPException(status_code=404, detail="No hay tasa disponible")
         return RatesResponses(
             price=usd_consult.price,
             source_type_code=SOURCE_CODES[usd_consult.source_type_id],
@@ -26,7 +26,7 @@ class RateService:
     def get_promedio_usd_rates(self):
         promedio_usd_consult = self.repository.get_promedio_usd_rates()
         if not promedio_usd_consult:
-             raise HTTPException(status_code=404, detail="No hay tasa disponible")
+            raise HTTPException(status_code=404, detail="No hay tasa disponible")
         return RatesResponses(
             price=promedio_usd_consult.price,
             source_type_code=SOURCE_CODES[promedio_usd_consult.source_type_id],

@@ -71,11 +71,6 @@ class RatesRepositoryImpl(RatesRepositoryInterface):
         start = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
         end = start + timedelta(days=1)
         
-        # cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
-        # return self.db.query(ExchangeRate).filter(
-        #     ExchangeRate.fetched_at >= cutoff
-        # )
-        
         VET = timezone(timedelta(hours=-4))
         now_vet = datetime.now(VET)
         start = now_vet.replace(hour=0, minute=0, second=0, microsecond=0)

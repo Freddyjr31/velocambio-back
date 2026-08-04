@@ -4,7 +4,7 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 #? ----- Project version
-VERSION = "1.0.3"
+VERSION = "1.0.4"
 
 class Settings(BaseSettings):
     
@@ -56,10 +56,6 @@ class Settings(BaseSettings):
 
 # @lru_cache asegura que la instancia de Settings se cree una sola vez
 # y se reutilice en toda la aplicación, mejorando el rendimiento.
-# @lru_cache()
-# def get_settings():
-#     return Settings()
-
 @lru_cache()
 def get_settings():
     s = Settings()
