@@ -2,8 +2,9 @@ name: Fetch exchange rates
 
 on:
   schedule:
-    # 9:00am - 2:30pm hora Venezuela (UTC-4) = 13:00 - 18:30 UTC, cada 30 min
-    - cron: '0,30 13-18 * * *'
+    # 9:00am - 2:30pm hora Venezuela (UTC-4) = 13:00 - 18:30 UTC, cada 30 min.
+    # Minutos 5 y 35 para evitar el pico global de runs en :00/:30.
+    - cron: '5,35 13-18 * * *'
   workflow_dispatch:
 
 jobs:
