@@ -6,12 +6,14 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from core.logger import logger
 from core.config import VERSION
+from core.rate_limit import limiter
 
 router = APIRouter(
     tags=["Health"],
 )
 
 @router.get("/health", status_code=status.HTTP_200_OK)
+@limiter.exempt
 async def health_check(db: Annotated[Session, Depends(get_db)]):
     
     try:

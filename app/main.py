@@ -6,9 +6,10 @@ from core.database import Base, get_engine
 from core.middleware import LogMiddleware, origins
 from routes.routes import init_routes
 
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.middleware import SlowAPIMiddleware
+
+from core.rate_limit import limiter
 
 
 @asynccontextmanager
@@ -23,11 +24,6 @@ velocambio_app = FastAPI(
     version="0.0.1",
     lifespan=lifespan
 )
-
-limiter = Limiter(
-    key_func=get_remote_address, 
-    default_limits=["200 per day", "50 per hour"]
-    )
 
 velocambio_app.state.limiter = limiter
 velocambio_app.add_exception_handler(
