@@ -2,6 +2,7 @@ services:
   api:
     container_name: velocambio_api
     build: .
+    command: uvicorn main:velocambio_app --host 0.0.0.0 --port 9000 --reload
     ports:
       - "9000:9000"
     volumes:

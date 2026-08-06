@@ -18,7 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app/ .
 
 # Exponer el puerto en el que corre la API
-EXPOSE 8000
+EXPOSE 9000
 
-# Comando para iniciar el servidor con Uvicorn
-CMD ["uvicorn", "main:velocambio_app", "--host", "0.0.0.0", "--port", "9000", "--reload"]
+# Comando para iniciar el servidor con Uvicorn en produccion.
+# Sin --reload: el reload es solo para desarrollo (ver docker-compose.yaml).
+# ${PORT:-9000} permite que Render inyecte su variable PORT.
+CMD ["sh", "-c", "uvicorn main:velocambio_app --host 0.0.0.0 --port ${PORT:-9000}"]

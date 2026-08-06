@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: velocambio-back
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY_JWT
+        sync: false
+      - key: DATABASE_TYPE
+        value: postgresql
+      - key: DATABASE_ECHO
+        value: 'False'
+      - key: ALGORITHIM_HASH_JWT
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: '90'
+      - key: DOLARAPI_BASE_URL
+        value: https://ve.dolarapi.com/v1
+      - key: BINANCE_P2P_BASE_URL
+        value: https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search
+      - key: HTTP_TIMEOUT_SECONDS
+        value: '10'
+      - key: HTTP_MAX_RETRIES
+        value: '3'
