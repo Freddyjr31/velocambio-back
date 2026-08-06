@@ -42,6 +42,6 @@ origins = [
     "http://localhost",
     "http://localhost:9000",
     "http://localhost:4200",
-    "https://localhost:4201",
+    "http://localhost:4201",
     "https://velocambio-back.onrender.com"
 ]
