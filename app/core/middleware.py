@@ -40,9 +40,8 @@ class LogMiddleware(BaseHTTPMiddleware):
 
 origins = [
     "http://localhost",
-    "http://localhost:3000",
-    "http://localhost:8000",
+    "http://localhost:9000",
     "http://localhost:4200",
-    "http://localhost:5000",
+    "https://localhost:4201",
     "https://velocambio-back.onrender.com"
 ]
