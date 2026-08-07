@@ -44,5 +44,5 @@ origins = [
     "http://localhost:4200",
     "http://localhost:4201",
     "https://velocambio-back.onrender.com",
-    "https://velocambio-front.vercel.app",
+    "https://velocambio.vercel.app",
 ]
