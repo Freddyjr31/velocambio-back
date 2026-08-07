@@ -88,6 +88,10 @@ velocambio-back/
 | `GET` | `/health` | Healthcheck + DB | No | — |
 | `GET` | `/` | Root | No | — |
 
+- Con `ENV=production` se desactivan `/docs`, `/redoc` y `/openapi.json` (ver `app/main.py`)
+- Rate limiting: instancia única en `app/core/rate_limit.py`, key = IP real vía `X-Forwarded-For`, `/health` exento
+- `allow_credentials=False` en CORS (auth por JWT en headers, sin cookies)
+
 ## Datasources externos
 
 - **DolarAPI** (`https://ve.dolarapi.com/v1`): Tasas oficiales y paralelas

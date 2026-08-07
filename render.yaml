@@ -5,6 +5,8 @@ services:
     plan: free
     healthCheckPath: /health
     envVars:
+      - key: ENV
+        value: production
       - key: DATABASE_URL
         sync: false
       - key: SECRET_KEY_JWT

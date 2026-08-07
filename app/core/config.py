@@ -4,12 +4,20 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 #? ----- Project version
-VERSION = "1.0.9+001"
+VERSION = "1.0.9+002"
 
 class Settings(BaseSettings):
     
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=True)
     
+    #? ──────────────────────────────────────────────
+    #?               Entorno
+    #? ──────────────────────────────────────────────
+
+    # "development" | "production"
+    # En producción se desactivan /docs, /redoc y /openapi.json
+    ENV: str = "production"
+
     #? ──────────────────────────────────────────────
     #?        Configuración de base de datos
     #? ──────────────────────────────────────────────
