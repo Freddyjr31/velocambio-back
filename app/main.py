@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
-from core.config import get_settings
+from core.config import VERSION, get_settings
 from core.database import Base, get_engine
 from core.middleware import LogMiddleware, origins
 from routes.routes import init_routes
@@ -26,7 +26,7 @@ is_production = settings.ENV == "production"
 velocambio_app = FastAPI(
     title="VeloCambio API",
     description="Sistema de consulta de diversas tasas de y cotizaciones de monedas como 'USD', 'EUR' y 'USDT' construido con FastAPI + SQLAlchemy.",
-    version="1.0.9+002",
+    version=VERSION,
     lifespan=lifespan,
     #* En producción se ocultan las docs y el esquema OpenAPI
     docs_url=None if is_production else "/docs",

@@ -13,57 +13,46 @@ class RatesRepositoryImpl(RatesRepositoryInterface):
     def __init__(self, db: Session):
         self.db = db
         
+    def _get_latest_rate(self, currency_from_id, rate_type_id, source_type_id, hours=24):
+        #* Devuelve la tasa más reciente de la fuente/moneda/tipo.
+        #* Prioriza la ventana de las últimas {hours} horas; si no hay registros
+        #* (p.ej. fin de semana sin cambio de precio y con dedup activo en el cron),
+        #* cae al último registro disponible sin ventana temporal.
+        filters = (
+            ExchangeRate.currency_from_id == currency_from_id,
+            ExchangeRate.currency_to_id == CURRENCY_IDS["VES"],
+            ExchangeRate.rate_type_id == rate_type_id,
+            ExchangeRate.source_type_id == source_type_id,
+        )
+
+        window = datetime.now(timezone.utc) - timedelta(hours=hours)
+        rate = (
+            self.db.query(ExchangeRate)
+            .filter(*filters, ExchangeRate.fetched_at >= window)
+            .order_by(ExchangeRate.fetched_at.desc())
+            .first()
+        )
+        if rate:
+            return rate
+
+        return (
+            self.db.query(ExchangeRate)
+            .filter(*filters)
+            .order_by(ExchangeRate.fetched_at.desc())
+            .first()
+        )
+
     def get_oficial_usd_rates(self):
-        usd_query = self.db.query(
-            ExchangeRate
-            ).filter(
-                ExchangeRate.currency_from_id == CURRENCY_IDS["USD"],
-                ExchangeRate.currency_to_id == CURRENCY_IDS["VES"],
-                ExchangeRate.rate_type_id == RATE_TYPE_IDS["oficial"],
-                ExchangeRate.source_type_id == SOURCE_IDS["dolar_api"],
-                ExchangeRate.fetched_at >= datetime.now(timezone.utc) - timedelta(hours=24)
-        ).first()
-            
-        return usd_query
+        return self._get_latest_rate(CURRENCY_IDS["USD"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"])
     
     def get_promedio_usd_rates(self):
-        usd_query = self.db.query(
-            ExchangeRate
-            ).filter(
-                ExchangeRate.currency_from_id == CURRENCY_IDS["USD"],
-                ExchangeRate.currency_to_id == CURRENCY_IDS["VES"],
-                ExchangeRate.rate_type_id == RATE_TYPE_IDS["promedio"],
-                ExchangeRate.source_type_id == SOURCE_IDS["dolar_api"],
-                ExchangeRate.fetched_at >= datetime.now(timezone.utc) - timedelta(hours=24)
-        ).first()
-            
-        return usd_query
+        return self._get_latest_rate(CURRENCY_IDS["USD"], RATE_TYPE_IDS["promedio"], SOURCE_IDS["dolar_api"])
     
     def get_eur_rates(self):
-        eur_query = self.db.query(
-            ExchangeRate
-            ).filter(
-                ExchangeRate.currency_from_id == CURRENCY_IDS["EUR"],
-                ExchangeRate.currency_to_id == CURRENCY_IDS["VES"],
-                ExchangeRate.rate_type_id == RATE_TYPE_IDS["oficial"],
-                ExchangeRate.source_type_id == SOURCE_IDS["dolar_api"],
-                ExchangeRate.fetched_at >= datetime.now(timezone.utc) - timedelta(hours=24)
-        ).first()
-            
-        return eur_query
+        return self._get_latest_rate(CURRENCY_IDS["EUR"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"])
     
     def get_p2p_rates(self):
-        p2p_query = self.db.query(
-            ExchangeRate
-            ).filter(
-                ExchangeRate.currency_from_id == CURRENCY_IDS["USDT"],
-                ExchangeRate.currency_to_id == CURRENCY_IDS["VES"],
-                ExchangeRate.rate_type_id == RATE_TYPE_IDS["p2p"],
-                ExchangeRate.source_type_id == SOURCE_IDS["binance_p2p"],
-                ExchangeRate.fetched_at >= datetime.now(timezone.utc) - timedelta(hours=24)
-        ).first()
-            
-        return p2p_query
+        return self._get_latest_rate(CURRENCY_IDS["USDT"], RATE_TYPE_IDS["p2p"], SOURCE_IDS["binance_p2p"])
     
     def get_all_rates_today(self):
         
