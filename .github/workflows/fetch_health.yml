@@ -1,0 +1,29 @@
+name: Fetch Health
+
+on:
+  schedule:
+    # Cada 10 min, todo el día (UTC), para mantener activo el backend en Render.
+    # Se usa offset en :03 para evitar el pico global de runs en :00.
+    - cron: '3-59/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        # Install lean: el script solo necesita httpx y apscheduler
+        run: pip install httpx apscheduler
+
+      - name: Ping de health
+        run: python cron/fetch_health.py --once
+        env:
+          BASE_URL_BACKEND: ${{ secrets.BASE_URL_BACKEND }}
+          HTTP_TIMEOUT_SECONDS: '10'
+          HTTP_MAX_RETRIES: '3'

@@ -4,7 +4,7 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 #? ----- Project version
-VERSION = "1.0.10"
+VERSION = "1.0.11"
 
 class Settings(BaseSettings):
     
@@ -60,6 +60,7 @@ class Settings(BaseSettings):
     BINANCE_P2P_BASE_URL: str = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search"
     HTTP_TIMEOUT_SECONDS: int = 10
     HTTP_MAX_RETRIES: int = 3
+    BASE_URL_BACKEND: str = "https://velocambio-back.onrender.com"
 
 
 # @lru_cache asegura que la instancia de Settings se cree una sola vez
