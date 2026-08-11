@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from pydantic import BaseModel, field_validator
 
@@ -76,3 +76,56 @@ class BinanceP2PResponse(BaseModel):
     data: list[BinanceP2PData] = []
     total: int | None = None
     success: bool | None = None
+
+
+# ── DolarAPI Históricos Response ─────────────────────
+class BcvHistoricoResponse(BaseModel):
+    """
+    - Item del histórico de DolarAPI (ej: /historicos/dolares/oficial).
+    - A diferencia de DolarApiResponse usa "fecha" (YYYY-MM-DD), no "fechaActualizacion".
+    """
+    fuente: str
+    compra: float | None = None
+    venta: float | None = None
+    promedio: float
+    fecha: date
+
+
+# ── Brecha Cambiaria ────────────────────────────────
+class BrechaItem(BaseModel):
+    rate: float
+    brecha: float | None = None
+
+class BrechaResponse(BaseModel):
+    usd_oficial_price: float
+    usd_oficial_fetched_at: datetime
+    brechas: dict[str, BrechaItem | None]
+
+
+# ── Variaciones ─────────────────────────────────────
+class VariacionItem(BaseModel):
+    price: float
+    variacion_24h: float | None = None
+    variacion_7d: float | None = None
+    fetched_at: datetime
+
+class VariacionesResponse(BaseModel):
+    rates: dict[str, VariacionItem]
+
+
+# ── Histórico ───────────────────────────────────────
+class HistoricoItem(BaseModel):
+    fecha: datetime
+    price: float
+    rate_buy: float | None = None
+    rate_sell: float | None = None
+
+class HistoricoResponse(BaseModel):
+    currency: str
+    rate_type: str
+    source: str
+    page: int
+    page_size: int
+    total: int
+    total_pages: int
+    history: list[HistoricoItem]

@@ -69,3 +69,55 @@ class RatesRepositoryImpl(RatesRepositoryInterface):
             ExchangeRate.fetched_at >= start.astimezone(timezone.utc),
             ExchangeRate.fetched_at < end.astimezone(timezone.utc),
         ).all()
+
+    def _get_rate_before(self, currency_from_id, rate_type_id, source_type_id, as_of):
+        #* Último registro de la fuente/moneda/tipo con fetched_at <= as_of.
+        #* Útil como línea base para variaciones (24h/7d): si no hay registro exacto,
+        #* devuelve el más reciente anterior al corte (maneja findes y dedup del cron).
+        return (
+            self.db.query(ExchangeRate)
+            .filter(
+                ExchangeRate.currency_from_id == currency_from_id,
+                ExchangeRate.currency_to_id == CURRENCY_IDS["VES"],
+                ExchangeRate.rate_type_id == rate_type_id,
+                ExchangeRate.source_type_id == source_type_id,
+                ExchangeRate.fetched_at <= as_of,
+            )
+            .order_by(ExchangeRate.fetched_at.desc())
+            .first()
+        )
+
+    def get_rate_at(self, currency_from_id, rate_type_id, source_type_id, as_of):
+        return self._get_rate_before(currency_from_id, rate_type_id, source_type_id, as_of)
+
+    def _build_history_filters(self, currency_from_id, rate_type_id, source_type_id, desde, hasta):
+        filters = [
+            ExchangeRate.currency_from_id == currency_from_id,
+            ExchangeRate.currency_to_id == CURRENCY_IDS["VES"],
+            ExchangeRate.rate_type_id == rate_type_id,
+            ExchangeRate.source_type_id == source_type_id,
+        ]
+        if desde:
+            filters.append(ExchangeRate.fetched_at >= desde)
+        if hasta:
+            filters.append(ExchangeRate.fetched_at <= hasta)
+        return filters
+
+    def get_rate_history(self, currency_from_id, rate_type_id, source_type_id, desde=None, hasta=None, limit=None, offset=None):
+        query = (
+            self.db.query(ExchangeRate)
+            .filter(*self._build_history_filters(currency_from_id, rate_type_id, source_type_id, desde, hasta))
+            .order_by(ExchangeRate.fetched_at.asc())
+        )
+        if limit is not None:
+            query = query.limit(limit)
+        if offset is not None:
+            query = query.offset(offset)
+        return query.all()
+
+    def count_rate_history(self, currency_from_id, rate_type_id, source_type_id, desde=None, hasta=None):
+        return (
+            self.db.query(ExchangeRate)
+            .filter(*self._build_history_filters(currency_from_id, rate_type_id, source_type_id, desde, hasta))
+            .count()
+        )
