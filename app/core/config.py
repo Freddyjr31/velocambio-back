@@ -4,7 +4,7 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 #? ----- Project version
-VERSION = "1.0.12"
+VERSION = "1.0.13"
 
 class Settings(BaseSettings):
     
@@ -58,6 +58,7 @@ class Settings(BaseSettings):
     FETCH_INTERVAL_MINUTES: int = 2
     DOLARAPI_BASE_URL: str = "https://ve.dolarapi.com/v1"
     BINANCE_P2P_BASE_URL: str = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search"
+    BCV_BASE_URL: str = "https://www.bcv.org.ve"
     HTTP_TIMEOUT_SECONDS: int = 10
     HTTP_MAX_RETRIES: int = 3
     BASE_URL_BACKEND: str = "https://velocambio-back.onrender.com"
