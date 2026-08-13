@@ -1,5 +1,5 @@
 
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 
 from fastapi import HTTPException
@@ -29,6 +29,12 @@ def _calc_brecha(base, current) -> float | None:
     if base is None or current is None or base == 0:
         return None
     return float(((Decimal(str(current)) - Decimal(str(base))) / Decimal(str(base))) * 100)
+
+def _as_utc_date(dt: datetime) -> date:
+    #* SQLite guarda datetimes naive; se asume UTC. PostgreSQL devuelve tz-aware.
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc).date()
 
 class RateService:
     
@@ -183,13 +189,30 @@ class RateService:
         if hasta is not None and hasta.tzinfo is None:
             hasta = hasta.replace(tzinfo=timezone.utc)
 
-        total = self.repository.count_rate_history(
+        #* Se traen todas las filas para deduplicar por (fecha, precio) en memoria,
+        #* evitando fechas repetidas cuando el cron insertó el mismo precio varias veces.
+        records = self.repository.get_rate_history(
             CURRENCY_IDS["USD"],
             RATE_TYPE_IDS["oficial"],
             SOURCE_IDS["dolar_api"],
             desde=desde,
             hasta=hasta,
         )
+
+        #* Dedup por (fecha UTC, precio): se conserva la primera ocurrencia de cada
+        #* par (la más reciente, porque vienen ordenados desc). Si un día tuvo dos
+        #* precios distintos, ambos se muestran.
+        deduped: list = []
+        seen: set[tuple] = set()
+        for rate in records:
+            day = _as_utc_date(rate.fetched_at)
+            key = (day, rate.price)
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append(rate)
+
+        total = len(deduped)
         if total == 0:
             raise HTTPException(status_code=404, detail="No hay tasas disponibles")
 
@@ -197,15 +220,8 @@ class RateService:
         if page < 1 or page > total_pages:
             raise HTTPException(status_code=404, detail="Página fuera de rango")
 
-        records = self.repository.get_rate_history(
-            CURRENCY_IDS["USD"],
-            RATE_TYPE_IDS["oficial"],
-            SOURCE_IDS["dolar_api"],
-            desde=desde,
-            hasta=hasta,
-            limit=page_size,
-            offset=(page - 1) * page_size,
-        )
+        offset = (page - 1) * page_size
+        page_records = deduped[offset:offset + page_size]
 
         return HistoricoResponse(
             currency="USD",
@@ -221,6 +237,6 @@ class RateService:
                     price=float(rate.price),
                     rate_buy=float(rate.rate_buy) if rate.rate_buy is not None else None,
                     rate_sell=float(rate.rate_sell) if rate.rate_sell is not None else None,
-                ) for rate in records
+                ) for rate in page_records
             ],
         )

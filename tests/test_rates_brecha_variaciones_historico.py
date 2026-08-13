@@ -138,6 +138,50 @@ def test_historico_bcv_paginacion(client, db_session):
     assert resp.status_code == 404
 
 
+def test_historico_bcv_dedup_mismo_dia_mismo_precio(client, db_session):
+    base = datetime(2024, 1, 1, tzinfo=timezone.utc)
+    #* Mismo día y mismo precio repetido (duplicados del cron) -> solo la más reciente
+    _add_rate(db_session, CURRENCY_IDS["USD"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"], 36, base)
+    _add_rate(db_session, CURRENCY_IDS["USD"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"], 36, base + timedelta(hours=1))
+    #* Mismo día con un precio distinto -> debe mostrarse también
+    _add_rate(db_session, CURRENCY_IDS["USD"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"], 36.5, base + timedelta(hours=2))
+    #* Otro día
+    _add_rate(db_session, CURRENCY_IDS["USD"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"], 37, base + timedelta(days=1))
+    db_session.commit()
+
+    resp = client.get("/rates/historico/bcv")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert data["total"] == 3, (
+        f"Esperaba 3 registros deduplicados, pero el total es {data['total']}"
+    )
+    #* Orden desc: 37 (otro día), 36.5 y 36 (mismo día, ambos precios)
+    assert [h["price"] for h in data["history"]] == [37.0, 36.5, 36.0]
+
+
+def test_historico_bcv_dedup_paginacion(client, db_session):
+    base = datetime(2024, 1, 1, tzinfo=timezone.utc)
+    #* 5 registros pero solo 3 distintos por (fecha, precio)
+    _add_rate(db_session, CURRENCY_IDS["USD"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"], 30, base)
+    _add_rate(db_session, CURRENCY_IDS["USD"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"], 30, base + timedelta(hours=1))
+    _add_rate(db_session, CURRENCY_IDS["USD"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"], 31, base + timedelta(hours=2))
+    _add_rate(db_session, CURRENCY_IDS["USD"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"], 32, base + timedelta(days=1))
+    _add_rate(db_session, CURRENCY_IDS["USD"], RATE_TYPE_IDS["oficial"], SOURCE_IDS["dolar_api"], 32, base + timedelta(days=1, hours=1))
+    db_session.commit()
+
+    resp = client.get("/rates/historico/bcv", params={"page": 1, "page_size": 2})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] == 3
+    assert data["total_pages"] == 2
+    assert [h["price"] for h in data["history"]] == [32.0, 31.0]
+
+    resp = client.get("/rates/historico/bcv", params={"page": 2, "page_size": 2})
+    assert resp.status_code == 200
+    assert [h["price"] for h in resp.json()["history"]] == [30.0]
+
+
 def test_historico_bcv_404_sin_datos(client):
     resp = client.get("/rates/historico/bcv")
     assert resp.status_code == 404
