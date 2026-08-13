@@ -107,7 +107,8 @@ class RatesRepositoryImpl(RatesRepositoryInterface):
         query = (
             self.db.query(ExchangeRate)
             .filter(*self._build_history_filters(currency_from_id, rate_type_id, source_type_id, desde, hasta))
-            .order_by(ExchangeRate.fetched_at.asc())
+            #* Orden descendente: las fechas más recientes primero
+            .order_by(ExchangeRate.fetched_at.desc())
         )
         if limit is not None:
             query = query.limit(limit)

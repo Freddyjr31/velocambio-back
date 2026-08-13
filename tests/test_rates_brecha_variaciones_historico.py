@@ -102,7 +102,8 @@ def test_historico_bcv_endpoint(client, db_session):
     assert data["currency"] == "USD"
     assert data["rate_type"] == "oficial"
     assert data["source"] == "dolar_api"
-    assert [h["price"] for h in data["history"]] == [36.0, 37.0, 38.0]
+    #* Orden descendente: las fechas más recientes primero
+    assert [h["price"] for h in data["history"]] == [38.0, 37.0, 36.0]
 
     resp = client.get(
         "/rates/historico/bcv",
@@ -127,11 +128,11 @@ def test_historico_bcv_paginacion(client, db_session):
     assert data["page"] == 1
     assert data["page_size"] == 2
     assert data["total_pages"] == 3
-    assert [h["price"] for h in data["history"]] == [30.0, 31.0]
+    assert [h["price"] for h in data["history"]] == [34.0, 33.0]
 
     resp = client.get("/rates/historico/bcv", params={"page": 3, "page_size": 2})
     assert resp.status_code == 200
-    assert [h["price"] for h in resp.json()["history"]] == [34.0]
+    assert [h["price"] for h in resp.json()["history"]] == [30.0]
 
     resp = client.get("/rates/historico/bcv", params={"page": 4, "page_size": 2})
     assert resp.status_code == 404
