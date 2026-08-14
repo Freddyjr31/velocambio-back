@@ -59,6 +59,9 @@ class Settings(BaseSettings):
     DOLARAPI_BASE_URL: str = "https://ve.dolarapi.com/v1"
     BINANCE_P2P_BASE_URL: str = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search"
     BCV_BASE_URL: str = "https://www.bcv.org.ve"
+    #* El sitio del BCV omite el certificado intermedio en algunos nodos,
+    #* rompiendo la verificación TLS en entornos sin store del SO (GitHub Actions).
+    BCV_VERIFY_SSL: bool = False
     HTTP_TIMEOUT_SECONDS: int = 10
     HTTP_MAX_RETRIES: int = 3
     BASE_URL_BACKEND: str = "https://velocambio-back.onrender.com"

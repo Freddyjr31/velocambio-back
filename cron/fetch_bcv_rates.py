@@ -15,7 +15,7 @@ from features.rates.datasource.api.bcv_datasource import BcvWebDataSource
 from features.rates.models.exchange_rates_model import ExchangeRate
 
 settings = get_settings()
-client = httpx.Client(timeout=settings.HTTP_TIMEOUT_SECONDS)
+client = httpx.Client(timeout=settings.HTTP_TIMEOUT_SECONDS, verify=settings.BCV_VERIFY_SSL)
 
 
 def _has_changed(db, rate) -> bool:

@@ -31,5 +31,6 @@ jobs:
           ALGORITHIM_HASH_JWT: HS256
           ACCESS_TOKEN_EXPIRE_MINUTES: '90'
           BCV_BASE_URL: 'https://www.bcv.org.ve'
+          BCV_VERIFY_SSL: 'False'
           HTTP_TIMEOUT_SECONDS: '20'
           HTTP_MAX_RETRIES: '3'
