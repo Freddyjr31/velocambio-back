@@ -4,7 +4,7 @@ on:
   schedule:
     # 12:00am hora Venezuela (UTC-4) = 04:00 UTC, con offset a :10
     # para evitar el pico global de runs en :00.
-    - cron: '10 4 * * *'
+    - cron: '8 4 * * *'
   workflow_dispatch:
 
 jobs:
