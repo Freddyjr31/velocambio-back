@@ -53,7 +53,7 @@ def test_get_usd_oficial_parses_html():
     _, datasource = _make_datasource()
     rate = datasource.get_usd_oficial()
 
-    assert rate.source_type_id == SOURCE_IDS["bcv"]
+    assert rate.source_type_id == SOURCE_IDS["dolar_api"]
     assert rate.currency_from_id == CURRENCY_IDS["USD"]
     assert rate.currency_to_id == CURRENCY_IDS["VES"]
     assert rate.rate_type_id == RATE_TYPE_IDS["oficial"]
@@ -69,7 +69,7 @@ def test_get_eur_oficial_parses_html():
     _, datasource = _make_datasource()
     rate = datasource.get_eur_oficial()
 
-    assert rate.source_type_id == SOURCE_IDS["bcv"]
+    assert rate.source_type_id == SOURCE_IDS["dolar_api"]
     assert rate.currency_from_id == CURRENCY_IDS["EUR"]
     assert rate.currency_to_id == CURRENCY_IDS["VES"]
     assert rate.rate_type_id == RATE_TYPE_IDS["oficial"]

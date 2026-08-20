@@ -51,7 +51,7 @@ class BcvWebDataSource:
             raise ValueError(f"Falta la fecha valor del BCV para {div_id}")
 
         return ExchangeRateSchema(
-            source_type_id=SOURCE_IDS["bcv"],
+            source_type_id=SOURCE_IDS["dolar_api"],
             currency_from_id=currency_id,
             currency_to_id=CURRENCY_IDS["VES"],
             rate_type_id=RATE_TYPE_IDS["oficial"],

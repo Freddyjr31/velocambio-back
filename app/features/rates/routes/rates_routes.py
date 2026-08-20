@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Request, status
 
+from core.cache import get_cached, set_cached
 from core.logger import logger
 from core.rate_limit import limiter
 
@@ -31,7 +32,12 @@ def get_oficial_usd(
     request: Request,
     rate_service: Annotated[RateService, Depends(get_rates_service)]
 ):
-    return rate_service.get_usd_rates()
+    cached = get_cached("usd_oficial")
+    if cached:
+        return cached
+    result = rate_service.get_usd_rates()
+    set_cached("usd_oficial", result)
+    return result
 
 
 @router.get(
@@ -44,7 +50,12 @@ def get_promedio_usd(
     request: Request,
     rate_service: Annotated[RateService, Depends(get_rates_service)]
 ):
-    return rate_service.get_promedio_usd_rates()
+    cached = get_cached("usd_promedio")
+    if cached:
+        return cached
+    result = rate_service.get_promedio_usd_rates()
+    set_cached("usd_promedio", result)
+    return result
 
 
 @router.get(
@@ -57,7 +68,12 @@ def get_rates_eur(
     request: Request,
     rate_service: Annotated[RateService, Depends(get_rates_service)]
 ):
-    return rate_service.get_eur_rates()
+    cached = get_cached("eur")
+    if cached:
+        return cached
+    result = rate_service.get_eur_rates()
+    set_cached("eur", result)
+    return result
 
 
 @router.get(
@@ -70,7 +86,12 @@ def get_rates_usdt(
     request: Request,
     rate_service: Annotated[RateService, Depends(get_rates_service)]
 ):
-    return rate_service.get_p2p_rates()
+    cached = get_cached("usdt")
+    if cached:
+        return cached
+    result = rate_service.get_p2p_rates()
+    set_cached("usdt", result)
+    return result
 
 @router.get(
     "/today",
@@ -82,7 +103,12 @@ def get_all_rates(
     request: Request,
     rate_service: Annotated[RateService, Depends(get_rates_service)]
 ):
-    return rate_service.get_all_rates_today()
+    cached = get_cached("today")
+    if cached:
+        return cached
+    result = rate_service.get_all_rates_today()
+    set_cached("today", result)
+    return result
 
 
 @router.get(
@@ -95,7 +121,12 @@ def get_brecha(
     request: Request,
     rate_service: Annotated[RateService, Depends(get_rates_service)]
 ):
-    return rate_service.get_brecha()
+    cached = get_cached("brecha")
+    if cached:
+        return cached
+    result = rate_service.get_brecha()
+    set_cached("brecha", result)
+    return result
 
 
 @router.get(
@@ -108,7 +139,12 @@ def get_variaciones(
     request: Request,
     rate_service: Annotated[RateService, Depends(get_rates_service)]
 ):
-    return rate_service.get_variaciones()
+    cached = get_cached("variaciones")
+    if cached:
+        return cached
+    result = rate_service.get_variaciones()
+    set_cached("variaciones", result)
+    return result
 
 
 @router.get(

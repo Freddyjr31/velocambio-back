@@ -9,6 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from core.cache import clear_cache
 from core.database import Base, get_db
 from main import velocambio_app as app
 
@@ -33,6 +34,7 @@ def db_session():
 
 @pytest.fixture(scope="function")
 def client(db_session):
+    clear_cache()
     def override_get_db():
         yield db_session
 
