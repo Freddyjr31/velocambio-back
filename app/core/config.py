@@ -4,7 +4,7 @@ from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 #? ----- Project version
-VERSION = "1.0.17"
+VERSION = "1.0.18"
 
 class Settings(BaseSettings):
     
