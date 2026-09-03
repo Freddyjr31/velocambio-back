@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import VERSION, get_settings
 from core.database import Base, get_engine
+from core.error_handlers import register_error_handlers
 from core.middleware import LogMiddleware, origins
 from routes.routes import init_routes
 
@@ -38,6 +39,9 @@ velocambio_app.state.limiter = limiter
 velocambio_app.add_exception_handler(
     429, _rate_limit_exceeded_handler
 )
+
+#? Error handlers globales (422 validación + 500 catch-all)
+register_error_handlers(velocambio_app)
 
 #? Middlewares
 velocambio_app.add_middleware(
