@@ -1,2 +1,27 @@
+[project]
+name = "velocambio-back"
+version = "1.0.23"
+description = "VeloCambio backend - API REST de tasas de cambio de Venezuela"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.115.6",
+    "uvicorn==0.34.0",
+    "sqlalchemy==2.0.36",
+    "pydantic[email]==2.10.3",
+    "pydantic-settings==2.7.0",
+    "passlib[bcrypt]==1.7.4",
+    "bcrypt==4.0.1",
+    "requests==2.34.2",
+    "python-dotenv",
+    "psycopg2-binary==2.9.10",
+    "python-jose[cryptography]==3.3.0",
+    "pytest==9.1.1",
+    "httpx==0.28.1",
+    "apscheduler>=3.10.4",
+    "slowapi==0.1.10",
+    "beautifulsoup4==4.12.3",
+    "cachetools>=5.3",
+]
+
 [tool.vercel]
 entrypoint = "server:app"
