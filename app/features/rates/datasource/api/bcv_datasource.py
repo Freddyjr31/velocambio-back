@@ -31,8 +31,16 @@ class BcvWebDataSource:
 
     @staticmethod
     def _parse_price(raw: str) -> Decimal:
-        #* El sitio usa coma como separador decimal (ej: 771,07140000)
-        cleaned = raw.strip().replace(",", ".")
+        #* El sitio usa punto de miles y coma decimal (ej: 1.009,34130871)
+        cleaned = raw.replace("\xa0", "").replace(" ", "").strip()
+        if "," in cleaned and "." in cleaned:
+            #* El último separador encontrado es el decimal
+            if cleaned.rfind(",") > cleaned.rfind("."):
+                cleaned = cleaned.replace(".", "").replace(",", ".")
+            else:
+                cleaned = cleaned.replace(",", "")
+        elif "," in cleaned:
+            cleaned = cleaned.replace(",", ".")
         return Decimal(cleaned)
 
     def _get_rate(self, currency_id: int, div_id: str) -> ExchangeRateSchema:

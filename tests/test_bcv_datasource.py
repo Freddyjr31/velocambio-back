@@ -79,6 +79,32 @@ def test_get_eur_oficial_parses_html():
     assert rate.rate_sell is None
 
 
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        #* Sin separador de miles
+        ("911,62430000", Decimal("911.62430000")),
+        ("  771,07140000 ", Decimal("771.07140000")),
+        #* Con punto de miles (el EUR pasó de 1000 Bs)
+        (" 1.009,34130871", Decimal("1009.34130871")),
+        #* Formato anglosajón por si el sitio cambia
+        ("1,009.34", Decimal("1009.34")),
+    ],
+)
+def test_parse_price_formatos_bcv(raw, expected):
+    assert BcvWebDataSource._parse_price(raw) == expected
+
+
+def test_get_eur_oficial_parses_price_with_thousands_separator():
+    #* El BCV publica el EUR con punto de miles: "1.009,34130871"
+    html = BCV_HTML.replace(" 889,45399204", " 1.009,34130871")
+    _, datasource = _make_datasource(html=html)
+
+    rate = datasource.get_eur_oficial()
+
+    assert Decimal(str(rate.price)) == Decimal("1009.34130871")
+
+
 def test_missing_elements_raises_value_error():
     _, datasource = _make_datasource(html="<html><body>Sin tasas</body></html>")
 
@@ -121,9 +147,9 @@ def test_fetch_and_store_skips_unchanged_rate(
     mock_session_factory.return_value.return_value = mock_session
 
     #* El último registro del USD ya tiene el mismo precio -> se omite.
-    #* Decimal(<float>) (no Decimal(str)) para que iguale el price float del schema.
+    #* La DB devuelve Numeric(18,6), por eso el Decimal se compara con 6 decimales.
     existing = MagicMock()
-    existing.price = Decimal(771.0714)
+    existing.price = Decimal("771.071400")
     mock_session.query.return_value.filter.return_value.order_by.return_value.first.return_value = existing
 
     from cron.fetch_bcv_rates import fetch_and_store
@@ -136,6 +162,33 @@ def test_fetch_and_store_skips_unchanged_rate(
     )
     mock_session.commit.assert_called_once()
     mock_session.close.assert_called_once()
+
+
+@patch("cron.fetch_bcv_rates.get_session_factory")
+@patch("cron.fetch_bcv_rates.client")
+def test_fetch_and_store_skips_rate_rounded_to_six_decimals(
+    mock_client: MagicMock,
+    mock_session_factory: MagicMock,
+):
+    #* El BCV publica 8 decimales y la DB guarda 6: 1009,34130871 -> 1009.341309
+    html = BCV_HTML.replace(" 889,45399204", " 1.009,34130871")
+    mock_client.get.return_value = _mock_http_response(html)
+
+    mock_session = MagicMock()
+    mock_session_factory.return_value.return_value = mock_session
+
+    existing = MagicMock()
+    existing.price = Decimal("1009.341309")
+    mock_session.query.return_value.filter.return_value.order_by.return_value.first.return_value = existing
+
+    from cron.fetch_bcv_rates import fetch_and_store
+
+    fetch_and_store()
+
+    # USD cambia (se inserta); EUR es igual tras el redondeo a 6 decimales (se omite)
+    assert mock_session.add.call_count == 1, (
+        f"Esperaba 1 ExchangeRate insertado (usd), pero se añadieron {mock_session.add.call_count}"
+    )
 
 
 @patch("cron.fetch_bcv_rates.get_session_factory")

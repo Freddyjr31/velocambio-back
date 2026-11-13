@@ -133,9 +133,10 @@ def test_fetch_and_store_skips_unchanged_rates(
     mock_session = MagicMock()
     mock_session_factory.return_value.return_value = mock_session
 
-    #* Simula que el último registro del oficial ya tiene el mismo precio (74.65)
+    #* Simula que el último registro del oficial ya tiene el mismo precio (74.65).
+    #* La DB devuelve Numeric(18,6), por eso el Decimal se compara con 6 decimales.
     existing = MagicMock()
-    existing.price = Decimal(MOCK_OFICIAL["promedio"])
+    existing.price = Decimal("74.650000")
     mock_session.query.return_value.filter.return_value.order_by.return_value.first.return_value = existing
 
     from cron.fetch_rates import fetch_and_store

@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "app"))
 
 from datetime import datetime, timezone
+from decimal import Decimal
 
 import httpx
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -34,7 +35,12 @@ def _has_changed(db, rate) -> bool:
         .order_by(ExchangeRate.fetched_at.desc())
         .first()
     )
-    return last is None or last.price != rate.price
+    if last is None:
+        return True
+    #* La DB guarda Numeric(18,6); se cuantiza el precio entrante (float)
+    #* para compararlo contra el Decimal que devuelve la consulta.
+    incoming = Decimal(str(rate.price)).quantize(Decimal("0.000001"))
+    return last.price != incoming
 
 
 def _build_sources():
